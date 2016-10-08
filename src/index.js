@@ -1,16 +1,44 @@
-chrome.management.getSelf(extensionInfo => console.log('extensionInfo', extensionInfo))
+import forest from './forest'
+
+// chrome.management.getSelf(extensionInfo => console.log('extensionInfo', extensionInfo))
+// chrome.tabs.create({ url: 'http://www.google.com' }, tab => console.log('tab', tab))
 
 chrome.windows.getAll({ populate: true }, windows => {
-  console.log('windows', windows)
-
   const allTabs = windows.reduce((tabs, currWindow) => {
-    const currWindowTabs = currWindow.tabs
-    tabs.push(...currWindowTabs)
+    tabs.push(...currWindow.tabs)
     return tabs
   }, [])
-  console.log('allTabs', allTabs)
 
-  chrome.tabs.get(allTabs[0].id, tabInfo => console.log('tabInfo', tabInfo))
+  const tabInfo = allTabs.map(tab => {
+    const { favIconUrl, title, url } = tab
+    return { favIconUrl, title, url }
+  })
+
+  console.log('tabInfo', tabInfo)
 })
 
-// chrome.tabs.create({ url: 'http://www.google.com' }, tab => console.log('tab', tab))
+chrome.tabs.onCreated.addListener(createdTab => {
+  console.log('tab created', createdTab)
+
+  if (createdTab.active) {
+    forest.addRoot(createdTab)
+  } else {
+    chrome.windows.getLastFocused({ populate: true }, window => {
+      console.log('window', window)
+      const currentTab = window.tabs.find(tab => tab.active)
+      forest.addChild(createdTab, currentTab.id)
+      console.log('child added', forest.forest)
+    })
+  }
+
+  console.log('forest', forest.forest)
+})
+
+// TODO: need to update tab info in forest when things change
+// these things that are changed can be seen in changeInfo, only need to watch for things we display
+chrome.tabs.onUpdated.addListener((updatedTabId, changeInfo, updatedTab) => {
+  console.log('tab updated', changeInfo)
+})
+
+
+
