@@ -20,11 +20,15 @@ chrome.windows.getAll({ populate: true }, windows => {
 chrome.tabs.onCreated.addListener(createdTab => {
   console.log('tab created', createdTab)
 
+  // created tab is a new root
   if (createdTab.active) {
     forest.addRoot(createdTab)
   } else {
+    // created tab is a child
     chrome.windows.getLastFocused({ populate: true }, window => {
       console.log('window', window)
+
+      // currentTab refers to the parent in the tree
       const currentTab = window.tabs.find(tab => tab.active)
       forest.addChild(createdTab, currentTab.id)
       console.log('child added', forest.forest)
