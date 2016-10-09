@@ -38,10 +38,25 @@ chrome.tabs.onCreated.addListener(createdTab => {
   console.log('forest', forest.forest)
 })
 
+
 // TODO: need to update tab info in forest when things change
 // these things that are changed can be seen in changeInfo, only need to watch for things we display
-chrome.tabs.onUpdated.addListener((updatedTabId, changeInfo, updatedTab) => {
+chrome.tabs.onUpdated.addListener((updatedTabId, changeInfo, updatedTab, title) => {
   console.log('tab updated', changeInfo)
+  console.log('tab Title', changeInfo["title"]) //this doesnt seem to work - alot of the tab titles are undefined
+  console.log('tab URL', updatedTab["url"])
+
+  // maybe can use the fact that tab titles are undefined - only when they are fully loaded/ it's a legit website does the title come up.
+  if ( changeInfo["title"] != undefined ) {
+  	var div = document.createElement('div');
+ // 	div.id="one_c";
+  	var innerHTMLstr = "<a href = " + updatedTab["url"] + ">" + changeInfo["title"] +"</a>";
+  	//console.log('innerHTMLstr', innerHTMLstr); //works rn, but if ever the link fails, good to debug by checking this line
+  	div.innerHTML = innerHTMLstr;
+
+	document.body.appendChild(div);
+  }
+
 })
 
 
